@@ -107,23 +107,23 @@ function src-plug() {
     fi
 }
 
-function evalcache() {
+function eval-cache() {
     local cmd=$1 evalfile=~/.local/share/zsh/eval/${1%% *}.zsh
     if [[ ! -s $evalfile ]]; then
         install -Dm0644 /dev/null $evalfile
         eval $cmd > $evalfile
+        zcompile $evalfile
     fi
-    zcompile-all $evalfile
     source $evalfile
 }
 
-function compcache() {
+function comp-cache() {
     local cmd=$1 compfile=~/.local/share/zsh/site-functions/_${1%% *}
     if [[ ! -s $compfile ]]; then
         install -Dm0644 /dev/null $compfile
         eval $cmd > $compfile
+        zcompile $compfile
     fi
-    zcompile-all $compfile
 }
 
 src-plug zsh-users/zsh-completions
@@ -159,9 +159,9 @@ if [[ ! -d ~/.dotfiles ]]; then
     dotfiles init
     dotfiles config pull.rebase false
     dotfiles config status.showUntrackedFiles no
-    #dotfiles remote add origin git@github.com:aaaooai/dotfiles.git
-    #dotfiles fetch
-    #dotfiles reset --hard origin/main
+    dotfiles remote add origin git@github.com:aaaooai/dotfiles.git
+    dotfiles fetch
+    dotfiles reset --hard origin/main
 fi
 
 if (( $+commands[cargo] )); then
@@ -170,10 +170,6 @@ fi
 
 if (( $+commands[emacs] )); then
     alias emacs='emacsclient -a emacs -t'
-fi
-
-if (( $+commands[eww] )); then
-    compcache 'eww shell-completions --shell zsh'
 fi
 
 if (( $+commands[ghq] )); then
@@ -190,12 +186,8 @@ if (( $+commands[ghq] )); then
     bindkey g zaw-ghq-repos
 fi
 
-if (( $+commands[glow] )); then
-    compcache 'glow completion zsh'
-fi
-
 if (( $+commands[niri] )); then
-   compcache 'niri completions zsh'
+   comp-cache 'niri completions zsh'
 fi
 
 if (( $+commands[nnn] )); then
@@ -217,19 +209,14 @@ if (( $+commands[pass] )); then
     export PASSWORD_STORE_ENABLE_EXTENSIONS=true
 fi
 
-if (( $+commands[tuios] )); then
-    compcache 'tuios completion zsh'
-fi
-
 if (( $+commands[vim] )); then
     export EDITOR=vim
 fi
 
 () { zcompile-all $@; src-all $@ } ~/.zshrc.*~*.zwc~*~
 
-unfunction zcompile-all src-all src-plug evalcache compcache
+unfunction zcompile-all src-all src-plug eval-cache comp-cache
 
 if (( DEBUG )); then
     set +x
 fi
-

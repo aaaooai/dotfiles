@@ -10,6 +10,7 @@ opt.clipboard = "unnamedplus" -- システムクリップボードと同期
 opt.ignorecase = true      -- 検索時に大文字小文字を無視
 opt.smartcase = true       -- 大文字を含んで検索したら区別する
 opt.cursorline = true      -- カーソル行をハイライト
+opt.cursorcolumn = true    -- カーソル列をハイライト
 
 -- リーダーキーの設定（多くのプラグインの起点になるキー）
 vim.g.mapleader = " "

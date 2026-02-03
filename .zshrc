@@ -186,6 +186,10 @@ if (( $+commands[ghq] )); then
     bindkey g zaw-ghq-repos
 fi
 
+if (( $+commands[mise] )); then
+    eval-cache 'mise activate zsh'
+fi
+
 if (( $+commands[niri] )); then
    comp-cache 'niri completions zsh'
 fi

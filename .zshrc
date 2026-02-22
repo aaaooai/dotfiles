@@ -147,6 +147,8 @@ alias grep='grep --color=auto'
 alias mv='mv -vb'
 alias cp='cp -vb'
 
+export GPG_TTY=$(tty)
+
 function mkcd() { install -Dd "$1" && cd "$1" }
 
 alias dotfiles='git --git-dir ~/.dotfiles --work-tree ~'
@@ -186,6 +188,10 @@ if (( $+commands[ghq] )); then
     bindkey g zaw-ghq-repos
 fi
 
+if (( $+commands[gibo] )); then
+    comp-cache 'gibo completion zsh'
+fi
+
 if (( $+commands[mise] )); then
     eval-cache 'mise activate zsh'
 fi
@@ -215,6 +221,35 @@ fi
 
 if (( $+commands[vim] )); then
     export EDITOR=vim
+fi
+
+if (( $+commands[aws] )); then
+    if (( $+commands[aws_completer] )); then
+        autoload bashcompinit
+        bashcompinit
+        compinit
+        complete -C "$commands[aws_completer]" aws
+    fi
+fi
+
+if (( $+commands[aws-vault] )); then
+    if (( $+commands[pass] )); then
+        export AWS_VAULT_BACKEND=pass
+        export AWS_VAULT_PASS_PASSWORD_STORE_DIR=~/.password-store
+        export AWS_VAULT_PASS_PREFIX=aws-vault
+    fi
+
+    function zaw-src-aws-vault-profiles() {
+        candidates=("${(Qf)$(aws-vault list --profiles)}")
+        actions=(zaw-callback-aws-vault-exec)
+    }
+
+    function zaw-callback-aws-vault-exec() {
+        aws-vault exec -d 12h -n "$1"
+    }
+
+    zaw-register-src -n aws-vault-profiles zaw-src-aws-vault-profiles
+    bindkey v zaw-aws-vault-profiles
 fi
 
 () { zcompile-all $@; src-all $@ } ~/.zshrc.*~*.zwc~*~

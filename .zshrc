@@ -252,6 +252,15 @@ if (( $+commands[aws-vault] )); then
     bindkey v zaw-aws-vault-profiles
 fi
 
+if (( $+commands[hourgit] )); then
+    comp-cache 'hourgit completion generate zsh'
+    function _hourgit_hook() {
+        git rev-parse --is-inside-work-tree >/dev/null 2>&1 \
+            && hourgit track >/dev/null 2>&1
+    }
+    precmd_functions+=(_hourgit_hook)
+fi
+
 () { zcompile-all $@; src-all $@ } ~/.zshrc.*~*.zwc~*~
 
 unfunction zcompile-all src-all src-plug eval-cache comp-cache
@@ -259,3 +268,6 @@ unfunction zcompile-all src-all src-plug eval-cache comp-cache
 if (( DEBUG )); then
     set +x
 fi
+
+# hourgit shell completion
+eval "$(hourgit completion generate zsh)"

@@ -40,10 +40,10 @@ setopt SHARE_HISTORY
 
 alias history='fc -dl -t "%Y-%m-%d %H:%M:%S"'
 
-bindkey  history-incremental-pattern-search-backward
-bindkey  history-incremental-pattern-search-forward
-bindkey  history-beginning-search-backward
-bindkey  history-beginning-search-forward
+bindkey '^R' history-incremental-pattern-search-backward
+bindkey '^S' history-incremental-pattern-search-forward
+bindkey '^P' history-beginning-search-backward
+bindkey '^N' history-beginning-search-forward
 
 autoload -Uz compinit
 if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then
@@ -63,23 +63,23 @@ zstyle ':zle:my-backward-word' word-style unspecified
 zstyle ':zle:my-backward-word' word-chars ' /=;@:{}[]()<>,|.'
 function my-backward-word() { zle backward-word }
 zle -N my-backward-word
-bindkey b my-backward-word
+bindkey 'b' my-backward-word
 
 zstyle ':zle:my-forward-word' word-style unspecified
 zstyle ':zle:my-forward-word' word-chars ' /=;@:{}[]()<>,|.'
 function my-forward-word() { zle forward-word }
 zle -N my-forward-word
-bindkey f my-forward-word
+bindkey 'f' my-forward-word
 
 zstyle ':zle:my-backward-kill-word' word-style unspecified
 zstyle ':zle:my-backward-kill-word' word-chars ' /=;@:{}[]()<>,|.'
 function my-backward-kill-word() { zle backward-kill-word }
 zle -N my-backward-kill-word
-bindkey w my-backward-kill-word
+bindkey 'w' my-backward-kill-word
 
 function clear_screen_and_scrollback() { printf '\x1Bc'; zle clear-screen }
 zle -N clear_screen_and_scrollback
-bindkey  clear_screen_and_scrollback
+bindkey '' clear_screen_and_scrollback
 
 function reset_broken_terminal() { printf '%b' '\e[0m\e(B\e)0\017\e[?5l\e7\e[0;0r\e8' }
 precmd_functions+=(reset_broken_terminal)
@@ -136,10 +136,21 @@ PURE_PROMPT_SYMBOL='›'
 PURE_PROMPT_VICMD_SYMBOL='‹'
 
 zstyle ':prompt:pure:git:stash' show yes
+
+zstyle ':prompt:pure:git:aws' show yes
+zstyle ':prompt:pure:aws' color 97
+
+zstyle ':prompt:pure:git:gcp' show yes
+zstyle ':prompt:pure:gcp' color 4
+
+zstyle ':prompt:pure:git:kubernetes' show yes
+zstyle ':prompt:pure:kubernetes' color 232
+
 zstyle ':prompt:pure:prompt:success' color green
 zstyle ':prompt:pure:prompt:error' color red
 
-src-plug sindresorhus/pure {async,pure}.zsh
+#src-plug sindresorhus/pure {async,pure}.zsh
+src-plug aaaooai/pure {async,pure}.zsh
 
 alias relogin='exec zsh -l'
 alias ls='ls -Xv --color=auto --group-directories-first'
@@ -161,7 +172,7 @@ if [[ ! -d ~/.dotfiles ]]; then
     dotfiles init
     dotfiles config pull.rebase false
     dotfiles config status.showUntrackedFiles no
-    dotfiles remote add origin git@github.com:aaaooai/dotfiles.git
+    dotfiles remote add origin https://github.com/aaaooai/dotfiles.git
     dotfiles fetch
     dotfiles reset --hard origin/main
 fi
@@ -185,7 +196,7 @@ if (( $+commands[ghq] )); then
         zle accept-line
     }
     zaw-register-src -n ghq-repos zaw-src-ghq-repos
-    bindkey g zaw-ghq-repos
+    bindkey 'g' zaw-ghq-repos
 fi
 
 if (( $+commands[gibo] )); then
@@ -249,11 +260,11 @@ if (( $+commands[aws-vault] )); then
     }
 
     zaw-register-src -n aws-vault-profiles zaw-src-aws-vault-profiles
-    bindkey v zaw-aws-vault-profiles
+    bindkey 'v' zaw-aws-vault-profiles
 fi
 
 if (( $+commands[wakatime-cli] )); then
-    export ZSH_WAKATIME_PROJECT_DETECTION=true 
+    export ZSH_WAKATIME_PROJECT_DETECTION=true
     src-plug wbingli/zsh-wakatime
 fi
 

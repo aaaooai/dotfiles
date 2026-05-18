@@ -52,7 +52,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh /home/tt/.claude/hooks/pre-submit.sh",
+            "command": "sh ~/.claude/hooks/pre-submit.sh",
             "statusMessage": "Scanning for secrets..."
           }
         ]
@@ -64,7 +64,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh /home/tt/.claude/hooks/pre-submit.sh && sh /home/tt/.claude/hooks/sandbox.sh",
+            "command": "sh ~/.claude/hooks/pre-submit.sh && sh ~/.claude/hooks/sandbox.sh",
             "statusMessage": "Security check: command & file access..."
           }
         ]

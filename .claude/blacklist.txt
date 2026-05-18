@@ -1,0 +1,30 @@
+rm
+rm -rf
+dd
+mkfs
+fdisk
+shred
+wipe
+srm
+git reset --hard
+git push --force
+git push -f
+DROP TABLE
+DELETE FROM
+TRUNCATE TABLE
+ssh -i
+ssh-keygen
+gpg --delete
+aws s3 rm
+gsutil rm
+curl -X POST
+curl -X PUT
+curl -X DELETE
+chmod 777
+chown
+visudo
+systemctl stop
+systemctl disable
+killall
+kill -9
+pkill -9

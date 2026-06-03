@@ -9,9 +9,16 @@ if (( DEBUG )); then
     set -x
 fi
 
-if (( $+commands[tmux] && $+SSH_CONNECTION && ! $+TMUX )); then
-    tmux has -t ssh 2>/dev/null && exec tmux attach -t ssh
-    exec tmux new -s ssh
+if (( $+commands[tmux] && ! $+TMUX && $+ALACRITTY_WINDOW_ID )); then
+    s=alacritty-$$
+    tmux has -t $s 2>/dev/null && exec tmux attach -t $s
+    exec tmux new -s $s
+fi
+
+if (( $+commands[tmux] && ! $+TMUX && $+SSH_CONNECTION )); then
+    s=ssh
+    tmux has -t $s 2>/dev/null && exec tmux attach -t $s
+    exec tmux new -s $s
 fi
 
 typeset -U path

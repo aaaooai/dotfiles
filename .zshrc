@@ -96,27 +96,30 @@ function reset_broken_terminal() { printf '%b' '\e[0m\e(B\e)0\017\e[?5l\e7\e[0;0
 precmd_functions+=(reset_broken_terminal)
 
 # functions
-function zcompile-all() {
-    local f
-    for f; do [[ ! -f $f.zwc || $f -nt $f.zwc ]] && zcompile -U $f; done
-}
-
 function src-all() {
     local f
+    for f; do [[ ! -f $f.zwc || $f -nt $f.zwc ]] && zcompile -U $f & done
     for f; do source $f; done
+    wait
+}
+
+export ZSH_PLUGIN_DIR=${ZSH_PLUGIN_DIR:-~/.local/share/zsh/plugins}
+typeset -ga PLUGIN_SRC_FILES
+
+function get-plug() {
+    local repo=$1 p=$ZSH_PLUGIN_DIR/$1; shift
+    [[ -e $p ]] || git clone --depth=1 https://github.com/$repo $p || { print -u2 "get-plug: clone failed: $repo"; return 1 }
+    if (( $# )); then
+        PLUGIN_SRC_FILES+=(${@/#/$p/})
+    else
+        PLUGIN_SRC_FILES+=($p/**/*.plugin.zsh(N-))
+    fi
 }
 
 function src-plug() {
-    local r=https://github.com/$1 p=~/.local/share/zsh/plugins/$1; shift
-    if [[ ! -e $p ]]; then
-        git clone --depth=1 $r $p 2>/dev/null || { print -u2 "src-plug: clone failed: $1"; return 1 }
-    fi
-    zcompile-all $p/*.zsh(N-) $p/**/*.zsh(N-) 2>/dev/null
-    if (( $# )); then
-        src-all ${@/#/$p/}(N-) || print -u2 "src-plug: source failed: $1"
-    else
-        src-all $p/*.plugin.zsh(N-) || print -u2 "src-plug: source failed: $1"
-    fi
+    find $ZSH_PLUGIN_DIR -name FETCH_HEAD -mtime +7 | sed 's,/.git/FETCH_HEAD,,' | \
+        xargs -n1 -I{} git -C {} pull --ff-only
+    src-all $PLUGIN_SRC_FILES
 }
 
 function eval-cache() {
@@ -139,11 +142,11 @@ function comp-cache() {
 }
 
 # plugins
-src-plug zsh-users/zsh-completions
-src-plug zsh-users/zsh-autosuggestions
-src-plug zsh-users/zsh-syntax-highlighting
-src-plug zsh-users/zaw
-src-plug sorin-ionescu/prezto modules/{command-not-found,completion}/init.zsh
+get-plug zsh-users/zsh-completions
+get-plug zsh-users/zsh-autosuggestions
+get-plug zsh-users/zsh-syntax-highlighting
+get-plug zsh-users/zaw
+get-plug sorin-ionescu/prezto modules/{command-not-found,completion}/init.zsh
 
 # prompt
 PURE_PROMPT_SYMBOL='›'
@@ -163,8 +166,10 @@ zstyle ':prompt:pure:kubernetes' color 232
 zstyle ':prompt:pure:prompt:success' color green
 zstyle ':prompt:pure:prompt:error' color red
 
-#src-plug sindresorhus/pure {async,pure}.zsh
-src-plug aaaooai/pure {async,pure}.zsh
+#get-plug sindresorhus/pure {async,pure}.zsh
+get-plug aaaooai/pure {async,pure}.zsh
+
+src-plug
 
 # aliases
 alias relogin='exec zsh -l'
@@ -241,9 +246,9 @@ if (( $+commands[vim] )); then
 fi
 
 # local
-() { zcompile-all $@; src-all $@ } ~/.zshrc.*~*.zwc~*~
+() { src-all $@ } ~/.zshrc.*~*.zwc~*~
 
-unfunction zcompile-all src-all src-plug eval-cache comp-cache
+unfunction src-all get-plug src-plug eval-cache comp-cache
 
 if (( DEBUG )); then
     set +x

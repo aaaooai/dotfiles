@@ -118,7 +118,7 @@ function get-plug() {
 
 function src-plug() {
     find $ZSH_PLUGIN_DIR -name FETCH_HEAD -mtime +7 | sed 's,/.git/FETCH_HEAD,,' | \
-        xargs -n1 -I{} git -C {} pull --ff-only
+        xargs -I{} git -C {} pull --ff-only
     src-all $PLUGIN_SRC_FILES
 }
 

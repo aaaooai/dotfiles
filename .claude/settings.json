@@ -1,8 +1,14 @@
 {
+  "respectGitignore": true,
   "attribution": {
     "commit": ""
   },
-  "model": "haiku",
+  "permissions": {
+    "deny": [
+      "Edit(.claude/settings*.json)"
+    ]
+  },
+  "model": "sonnet",
   "hooks": {
     "UserPromptSubmit": [
       {
@@ -44,7 +50,7 @@
       }
     }
   },
-  "respectGitignore": true,
+  "language": "ja",
   "sandbox": {
     "enabled": true,
     "failIfUnavailable": false,
@@ -52,6 +58,10 @@
       "allowedDomains": []
     },
     "filesystem": {
+      "denyWrite": [
+        ".claude/settings.json",
+        "**/.claude/settings*.json"
+      ],
       "denyRead": [
         "/root/.ssh",
         "/etc/shadow",
@@ -65,18 +75,8 @@
         "~/.gnupg/**",
         "~/.npmrc",
         "~/.*_history"
-      ],
-      "denyWrite": [
-        ".claude/settings.json",
-        "**/.claude/settings*.json"
       ]
     }
   },
-  "language": "ja",
-  "permissions": {
-    "deny": [
-      "Edit(.claude/settings*.json)",
-      "Write(.claude/settings*.json)"
-    ]
-  }
+  "tui": "fullscreen"
 }

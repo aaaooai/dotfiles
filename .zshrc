@@ -107,11 +107,9 @@ function src-all() {
 }
 
 function src-plug() {
-    local r=https://github.com/$1 p=~/.local/share/zsh/plugins/$1 update_interval=${SRC_PLUG_UPDATE_INTERVAL:-604800}; shift
+    local r=https://github.com/$1 p=~/.local/share/zsh/plugins/$1; shift
     if [[ ! -e $p ]]; then
         git clone --depth=1 $r $p 2>/dev/null || { print -u2 "src-plug: clone failed: $1"; return 1 }
-    elif [[ ! -e $p/.git/FETCH_HEAD ]] || (( $(date +%s) - $(stat -f%m $p/.git/FETCH_HEAD 2>/dev/null || echo 0) > update_interval )); then
-        git -C $p pull --ff-only 2>/dev/null || print -u2 "src-plug: pull failed: $1"
     fi
     zcompile-all $p/*.zsh(N-) $p/**/*.zsh(N-) 2>/dev/null
     if (( $# )); then

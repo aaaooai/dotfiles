@@ -107,34 +107,36 @@ function src-all() {
 }
 
 function src-plug() {
-    local r=https://github.com/$1 p=~/.local/share/zsh/plugins/$1; shift
+    local r=https://github.com/$1 p=~/.local/share/zsh/plugins/$1 update_interval=${SRC_PLUG_UPDATE_INTERVAL:-604800}; shift
     if [[ ! -e $p ]]; then
-        git clone --depth=1 $r $p
-        zcompile-all $p/*.zsh(N-) $p/**/*.zsh(N-)
+        git clone --depth=1 $r $p 2>/dev/null || { print -u2 "src-plug: clone failed: $1"; return 1 }
+    elif [[ ! -e $p/.git/FETCH_HEAD ]] || (( $(date +%s) - $(stat -f%m $p/.git/FETCH_HEAD 2>/dev/null || echo 0) > update_interval )); then
+        git -C $p pull --ff-only 2>/dev/null || print -u2 "src-plug: pull failed: $1"
     fi
+    zcompile-all $p/*.zsh(N-) $p/**/*.zsh(N-) 2>/dev/null
     if (( $# )); then
-        src-all ${@/#/$p/}(N-)
+        src-all ${@/#/$p/}(N-) || print -u2 "src-plug: source failed: $1"
     else
-        src-all $p/*.plugin.zsh(N-)
+        src-all $p/*.plugin.zsh(N-) || print -u2 "src-plug: source failed: $1"
     fi
 }
 
 function eval-cache() {
-    local cmd=$1 evalfile=~/.local/share/zsh/eval/${1%% *}.zsh
-    if [[ ! -s $evalfile ]]; then
-        install -Dm0644 /dev/null $evalfile
-        eval $cmd > $evalfile
-        zcompile $evalfile
+    local cmd=$1 evalfile=~/.local/share/zsh/eval/${1%% *}.zsh cmdfile=$evalfile.cmd
+    mkdir -p ${evalfile:h}
+    if [[ ! -f $cmdfile ]]; then
+        eval $cmd 2>/dev/null > $evalfile && eval $cmd 2>/dev/null > $cmdfile
+        zcompile $evalfile 2>/dev/null
     fi
-    source $evalfile
+    source $evalfile 2>/dev/null
 }
 
 function comp-cache() {
-    local cmd=$1 compfile=~/.local/share/zsh/site-functions/_${1%% *}
-    if [[ ! -s $compfile ]]; then
-        install -Dm0644 /dev/null $compfile
-        eval $cmd > $compfile
-        zcompile $compfile
+    local cmd=$1 compfile=~/.local/share/zsh/site-functions/_${1%% *} cmdfile=$compfile.cmd
+    mkdir -p ${compfile:h}
+    if [[ ! -f $cmdfile ]]; then
+        eval $cmd 2>/dev/null > $compfile && eval $cmd 2>/dev/null > $cmdfile
+        zcompile $compfile 2>/dev/null
     fi
 }
 
@@ -192,35 +194,6 @@ if [[ ! -d ~/.dotfiles ]]; then
     dotfiles reset --hard origin/main
 fi
 
-# tools
-if (( $+commands[aws] )); then
-    if (( $+commands[aws_completer] )); then
-        autoload bashcompinit
-        bashcompinit
-        complete -C "$commands[aws_completer]" aws
-    fi
-fi
-
-if (( $+commands[aws-vault] )); then
-    if (( $+commands[pass] )); then
-        export AWS_VAULT_BACKEND=pass
-        export AWS_VAULT_PASS_PASSWORD_STORE_DIR=~/.password-store
-        export AWS_VAULT_PASS_PREFIX=aws-vault
-    fi
-
-    function zaw-src-aws-vault-profiles() {
-        candidates=("${(Qf)$(aws-vault list --profiles)}")
-        actions=(zaw-callback-aws-vault-exec)
-    }
-
-    function zaw-callback-aws-vault-exec() {
-        aws-vault exec -d 12h -n "$1"
-    }
-
-    zaw-register-src -n aws-vault-profiles zaw-src-aws-vault-profiles
-    bindkey 'v' zaw-aws-vault-profiles
-fi
-
 if (( $+commands[cargo] )); then
     path+=(~/.cargo/bin(N-/))
 fi
@@ -241,18 +214,6 @@ if (( $+commands[ghq] )); then
     }
     zaw-register-src -n ghq-repos zaw-src-ghq-repos
     bindkey 'g' zaw-ghq-repos
-fi
-
-if (( $+commands[gibo] )); then
-    comp-cache 'gibo completion zsh'
-fi
-
-if (( $+commands[mise] )); then
-    eval-cache 'mise activate zsh'
-fi
-
-if (( $+commands[niri] )); then
-    comp-cache 'niri completions zsh'
 fi
 
 if (( $+commands[nnn] )); then
@@ -279,11 +240,6 @@ fi
 
 if (( $+commands[vim] )); then
     export EDITOR=vim
-fi
-
-if (( $+commands[wakatime-cli] )); then
-    export ZSH_WAKATIME_PROJECT_DETECTION=true
-    src-plug wbingli/zsh-wakatime
 fi
 
 # local

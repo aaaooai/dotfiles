@@ -123,7 +123,8 @@ function src-plug() {
 }
 
 function eval-cache() {
-    local cmd=$1 evalfile=~/.local/share/zsh/eval/${1%% *}.zsh cmdfile=$evalfile.cmd
+    local cmd=$1 evalfile=~/.local/share/zsh/eval/${1%% *}.zsh
+    local cmdfile=$evalfile.cmd
     mkdir -p ${evalfile:h}
     if [[ ! -f $cmdfile ]]; then
         eval $cmd 2>/dev/null > $evalfile && eval $cmd 2>/dev/null > $cmdfile
@@ -133,7 +134,8 @@ function eval-cache() {
 }
 
 function comp-cache() {
-    local cmd=$1 compfile=~/.local/share/zsh/site-functions/_${1%% *} cmdfile=$compfile.cmd
+    local cmd=$1 compfile=~/.local/share/zsh/site-functions/_${1%% *}
+    local cmdfile=$compfile.cmd
     mkdir -p ${compfile:h}
     if [[ ! -f $cmdfile ]]; then
         eval $cmd 2>/dev/null > $compfile && eval $cmd 2>/dev/null > $cmdfile
